@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Te amo, Monilla</title>
+  <style>
+    :root{--bg:#ffeef0;--card:#fff;--pink:#ff477e;--dark:#5b1b2f}
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: radial-gradient(circle at 10% 10%, #fff6f8 0%, var(--bg) 40%, #ffdfe6 100%);
+      min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.95));
+      border-radius:20px;padding:3rem 2.5rem;box-shadow:0 10px 30px rgba(91,27,47,0.12);
+      text-align:center;max-width:520px;width:100%;
+    }
+    h1{margin:0 0 1rem;font-size:1.8rem;color:var(--dark)}
+    p.lead{margin:0 0 2rem;color:#7a394a}
+    .btn{
+      display:inline-block;padding:1rem 1.6rem;border-radius:999px;border:0;cursor:pointer;
+      font-weight:700;font-size:1.05rem;background:linear-gradient(90deg,var(--pink),#ff8bb3);
+      color:white;box-shadow:0 6px 18px rgba(255,71,126,0.28);transition:transform .12s ease, box-shadow .12s ease;
+    }
+    .btn:active{transform:translateY(2px);box-shadow:0 3px 10px rgba(255,71,126,0.18)}
+
+    /* mensaje de amor */
+    .love{
+      margin-top:1.5rem;font-size:1.6rem;font-weight:800;color:var(--pink);display:flex;gap:.6rem;align-items:center;justify-content:center;
+      transform:scale(0.92);opacity:0;transition:transform .4s cubic-bezier(.2,.9,.3,1),opacity .3s ease;
+    }
+    .love.show{transform:scale(1);opacity:1}
+    .heart{
+      width:46px;height:46px;background:var(--pink);position:relative;border-radius:50% 50% 0 0;transform:rotate(-45deg);
+      box-shadow:0 8px 24px rgba(91,27,47,0.12);animation:pulse 1s infinite;
+    }
+    .heart::before,.heart::after{content:'';width:46px;height:46px;background:var(--pink);border-radius:50%;position:absolute;top:-23px;left:0}
+    .heart::after{left:23px}
+    @keyframes pulse{0%{transform:rotate(-45deg) scale(1)}50%{transform:rotate(-45deg) scale(1.06)}100%{transform:rotate(-45deg) scale(1)}}
+
+    /* pequeño confetti de corazones (decorativo) */
+    .confetti{position:relative;height:0}
+    .c{position:absolute;opacity:0;animation:floatUp 1.2s forwards}
+    .c:nth-child(1){left:20%;top:0;animation-delay:.05s}
+    .c:nth-child(2){left:40%;top:0;animation-delay:.1s}
+    .c:nth-child(3){left:60%;top:0;animation-delay:.15s}
+    .c:nth-child(4){left:80%;top:0;animation-delay:.2s}
+    @keyframes floatUp{0%{opacity:0;transform:translateY(6px) scale(.6)}40%{opacity:1}100%{opacity:0;transform:translateY(-68px) scale(.9)}}
+
+    footer{margin-top:1.6rem;color:#9a4b63;font-size:.9rem}
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <h1>Un mensajito para Monilla 💌</h1>
+    <p class="lead">Aprieta el botón y escucha lo que tu corazón quiere decir.</p>
+
+    <button id="loveBtn" class="btn">Apreta aquí</button>
+
+    <div id="result" class="love" aria-live="polite">
+      <div class="heart" aria-hidden="true"></div>
+      <div id="text">te amo monilla</div>
+    </div>
+
+    <div class="confetti" aria-hidden="true">
+      <div class="c">❤️</div>
+      <div class="c">💘</div>
+      <div class="c">💕</div>
+      <div class="c">💖</div>
+    </div>
+
+    <footer>Hecho con mucho cariño 💞</footer>
+  </main>
+
+  <script>
+    const btn = document.getElementById('loveBtn');
+    const res = document.getElementById('result');
+    const txt = document.getElementById('text');
+    const conf = document.querySelectorAll('.confetti .c');
+
+    function showLove(){
+      // animación: mostrar mensaje
+      res.classList.add('show');
+      // pequeño efecto en el botón
+      btn.style.transform = 'scale(.96)';
+      setTimeout(()=> btn.style.transform = '', 180);
+      // reproducir un sonido suave (opcional, si el navegador lo permite)
+      try{
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine'; o.frequency.value = 440; g.gain.value = 0.02;
+        o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.09);
+      }catch(e){/* si no se puede, no pasa nada */}
+      // animar confetti (corazones)
+      conf.forEach((el, i)=>{
+        el.style.opacity = 0; // reinicio
+        void el.offsetWidth; // reflow
+        el.style.animation = 'floatUp 1.2s forwards';
+        el.style.animationDelay = (i * 0.06) + 's';
+      });
+    }
+
+    btn.addEventListener('click', ()=>{
+      // si ya está visible, hacemos un pequeño latido extra
+      if(res.classList.contains('show')){
+        res.classList.remove('show');
+        void res.offsetWidth; // reflow para reiniciar animación
+        setTimeout(showLove, 80);
+      } else showLove();
+    });
+
+    // accesibilidad: permitir activar con Enter cuando el foco está en el botón
+    btn.addEventListener('keyup', (e)=>{ if(e.key === 'Enter' || e.key === ' ') btn.click(); });
+  </script>
+</body>
+</html>
